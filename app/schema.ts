@@ -1,56 +1,75 @@
 import { sql } from "drizzle-orm";
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import {
+	mysqlTable,
+	varchar,
+	int,
+	timestamp,
+	boolean,
+	primaryKey,
+} from "drizzle-orm/mysql-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = sqliteTable("user", {
-	id: text("id").notNull().primaryKey(),
-	name: text("name"),
-	email: text("email").notNull(),
-	emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
-	image: text("image"),
+export const users = mysqlTable("user", {
+	id: varchar("id", { length: 255 }).notNull().primaryKey(),
+	name: varchar("name", { length: 255 }),
+	email: varchar("email", { length: 255 }).notNull(),
+	emailVerified: timestamp("emailVerified"),
+	image: varchar("image", { length: 255 }),
 });
 
-export const accounts = sqliteTable("account", {
-	userId: text("userId")
+export const accounts = mysqlTable(
+	"account",
+	{
+		userId: varchar("userId", { length: 255 })
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		type: varchar("type", { length: 255 })
+			.$type<"oauth" | "oidc" | "email">()
+			.notNull(),
+		provider: varchar("provider", { length: 255 }).notNull(),
+		providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
+		refresh_token: varchar("refresh_token", { length: 255 }),
+		access_token: varchar("access_token", { length: 255 }),
+		expires_at: int("expires_at"),
+		token_type: varchar("token_type", { length: 255 }),
+		scope: varchar("scope", { length: 255 }),
+		id_token: varchar("id_token", { length: 255 }),
+		session_state: varchar("session_state", { length: 255 }),
+	},
+	(table) => ({
+		pk: primaryKey(table.userId, table.provider),
+	}),
+);
+
+export const sessions = mysqlTable("session", {
+	sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
+	userId: varchar("userId", { length: 255 })
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
-	type: text("type").$type<"oauth" | "oidc" | "email">().notNull(),
-	provider: text("provider").notNull(),
-	providerAccountId: text("providerAccountId").notNull(),
-	refresh_token: text("refresh_token"),
-	access_token: text("access_token"),
-	expires_at: integer("expires_at"),
-	token_type: text("token_type"),
-	scope: text("scope"),
-	id_token: text("id_token"),
-	session_state: text("session_state"),
+	expires: timestamp("expires").notNull(),
 });
 
-export const sessions = sqliteTable("session", {
-	sessionToken: text("sessionToken").notNull().primaryKey(),
-	userId: text("userId")
-		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
-	expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-});
+export const verificationTokens = mysqlTable(
+	"verificationToken",
+	{
+		identifier: varchar("identifier", { length: 255 }).notNull(),
+		token: varchar("token", { length: 255 }).notNull(),
+		expires: timestamp("expires").notNull(),
+	},
+	(table) => ({
+		pk: primaryKey(table.identifier, table.token),
+	}),
+);
 
-export const verificationTokens = sqliteTable("verificationToken", {
-	identifier: text("identifier").notNull(),
-	token: text("token").notNull(),
-	expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-});
-
-export const todos = sqliteTable("todos", {
-	id: integer("id").primaryKey({ autoIncrement: true }),
-	description: text("description").notNull(),
-	userId: text("user_id")
+export const todos = mysqlTable("todos", {
+	id: int("id").primaryKey().autoincrement(),
+	description: varchar("description", { length: 255 }).notNull(),
+	userId: varchar("user_id", { length: 255 })
 		.notNull()
 		.references(() => users.id),
-	completed: integer("completed", { mode: "boolean" }).default(false),
-	createdAt: integer("created_at", { mode: "timestamp" }).default(
-		sql`(strftime('%s', 'now'))`,
-	),
+	completed: boolean("completed").default(false),
+	createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const insertTodoSchema = createInsertSchema(todos).extend({
@@ -62,10 +81,6 @@ export const insertTodoSchema = createInsertSchema(todos).extend({
 });
 export const selectTodoSchema = createSelectSchema(todos);
 
-// export const createTodoSchema = insertTodoSchema.omit({
-// 	id: true,
-// 	createdAt: true,
-// });
 export const createTodoSchema = z.object({
 	description: z
 		.string()

@@ -1,9 +1,12 @@
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { drizzle } from "drizzle-orm/d1";
+import { connect } from "@tidbcloud/serverless";
+import { drizzle } from "drizzle-orm/tidb-serverless";
 
 export const runtime = "edge";
 
 export const getDb = () => {
-	const d1 = getRequestContext().env.DB;
-	return drizzle(d1);
+	const client = connect({
+		url: getRequestContext().env.TIDB_HTTP_URL,
+	});
+	return drizzle(client);
 };
