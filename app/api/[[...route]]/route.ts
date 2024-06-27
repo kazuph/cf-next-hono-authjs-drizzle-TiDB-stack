@@ -22,21 +22,10 @@ import { getAuthConfig } from "@/lib/auth";
 
 export const runtime = "edge";
 
-type Bindings = {
-	DB: D1Database;
-};
-
-const app = new Hono<{ Bindings: Bindings }>().basePath("/api");
+const app = new Hono().basePath("/api");
 
 app.use(csrf());
 app.use(secureHeaders());
-// app.use("*", async (c, next) => {
-// 	const userAgent = c.req.header("User-Agent");
-// 	if (!userAgent || !userAgent.includes("Mozilla")) {
-// 		return c.text("Access denied", 403);
-// 	}
-// 	await next();
-// });
 
 app.use("*", initAuthConfig(getAuthConfig));
 app.use("/auth/*", authHandler());
@@ -49,12 +38,16 @@ const route = app
 		if (!authUser.user) return c.json({ error: "Invalid user" }, 400);
 
 		const db = getDb();
-		const results = await db
-			.select()
-			.from(todos)
-			.where(eq(todos.userId, authUser.user.id))
-			.all();
-		return c.json(results);
+		try {
+			const results = await db
+				.select()
+				.from(todos)
+				.where(eq(todos.userId, authUser.user.id));
+			return c.json(results);
+		} catch (error) {
+			console.error("Database error:", error);
+			return c.json({ error: "Internal server error" }, 500);
+		}
 	})
 	.post("/todos", zValidator("json", createTodoSchema), async (c) => {
 		const authUser = c.get("authUser");
@@ -63,11 +56,23 @@ const route = app
 
 		const db = getDb();
 		const { description } = c.req.valid("json");
-		const result = await db
-			.insert(todos)
-			.values({ description, userId: authUser.user.id })
-			.returning();
-		return c.json(result[0]);
+		try {
+			const result = await db
+				.insert(todos)
+				.values({ description, userId: authUser.user.id });
+
+			if (result.insertId) {
+				const newTodo = await db
+					.select()
+					.from(todos)
+					.where(eq(todos.id, result.insertId))
+					.limit(1);
+				return c.json(newTodo[0]);
+			}
+		} catch (error) {
+			console.error("Database error:", error);
+			return c.json({ error: "Internal server error" }, 500);
+		}
 	})
 	.put(
 		"/todos/:id/toggle",
@@ -81,15 +86,25 @@ const route = app
 			const db = getDb();
 			const { id } = c.req.valid("param");
 			const { completed } = c.req.valid("json");
-			const result = await db
-				.update(todos)
-				.set({ completed })
-				.where(and(eq(todos.id, id), eq(todos.userId, authUser.user.id)))
-				.returning();
+			try {
+				const result = await db
+					.update(todos)
+					.set({ completed })
+					.where(and(eq(todos.id, id), eq(todos.userId, authUser.user.id)));
 
-			if (result.length === 0)
-				return c.json({ error: "Todo not found or not owned by user" }, 404);
-			return c.json(result[0]);
+				if (result.rowsAffected === 0)
+					return c.json({ error: "Todo not found or not owned by user" }, 404);
+
+				const updatedTodo = await db
+					.select()
+					.from(todos)
+					.where(eq(todos.id, id))
+					.limit(1);
+				return c.json(updatedTodo[0]);
+			} catch (error) {
+				console.error("Database error:", error);
+				return c.json({ error: "Internal server error" }, 500);
+			}
 		},
 	)
 	.put(
@@ -104,15 +119,25 @@ const route = app
 			const db = getDb();
 			const { id } = c.req.valid("param");
 			const { description } = c.req.valid("json");
-			const result = await db
-				.update(todos)
-				.set({ description })
-				.where(and(eq(todos.id, id), eq(todos.userId, authUser.user.id)))
-				.returning();
+			try {
+				const result = await db
+					.update(todos)
+					.set({ description })
+					.where(and(eq(todos.id, id), eq(todos.userId, authUser.user.id)));
 
-			if (result.length === 0)
-				return c.json({ error: "Todo not found or not owned by user" }, 404);
-			return c.json(result[0]);
+				if (result.rowsAffected === 0)
+					return c.json({ error: "Todo not found or not owned by user" }, 404);
+
+				const updatedTodo = await db
+					.select()
+					.from(todos)
+					.where(eq(todos.id, id))
+					.limit(1);
+				return c.json(updatedTodo[0]);
+			} catch (error) {
+				console.error("Database error:", error);
+				return c.json({ error: "Internal server error" }, 500);
+			}
 		},
 	)
 	.delete("/todos/:id", zValidator("param", deleteTodoSchema), async (c) => {
@@ -122,14 +147,18 @@ const route = app
 
 		const db = getDb();
 		const { id } = c.req.valid("param");
-		const result = await db
-			.delete(todos)
-			.where(and(eq(todos.id, id), eq(todos.userId, authUser.user.id)))
-			.returning();
+		try {
+			const result = await db
+				.delete(todos)
+				.where(and(eq(todos.id, id), eq(todos.userId, authUser.user.id)));
 
-		if (result.length === 0)
-			return c.json({ error: "Todo not found or not owned by user" }, 404);
-		return c.json({ success: true });
+			if (result.rowsAffected === 0)
+				return c.json({ error: "Todo not found or not owned by user" }, 404);
+			return c.json({ success: true });
+		} catch (error) {
+			console.error("Database error:", error);
+			return c.json({ error: "Internal server error" }, 500);
+		}
 	});
 
 export const GET = handle(route);
