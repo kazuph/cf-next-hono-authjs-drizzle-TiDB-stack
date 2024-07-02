@@ -28,7 +28,14 @@ const main = async () => {
 						return next();
 					},
 				});
-				console.log({ sqlBody, params, method, result });
+				console.log(
+					JSON.stringify(
+						{ sqlBody, params, method, result: result[0] },
+						null,
+						2,
+					),
+				);
+
 				res.send(result[0]);
 			} catch (e: any) {
 				res.status(500).json({ error: e });
@@ -50,7 +57,13 @@ const main = async () => {
 					},
 				});
 
-				console.log({ sqlBody, params, method, result });
+				console.log(
+					JSON.stringify(
+						{ sqlBody, params, method, result: result[0] },
+						null,
+						2,
+					),
+				);
 				res.send(result);
 			} catch (e: any) {
 				res.status(500).json({ error: e });
