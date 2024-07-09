@@ -1,11 +1,8 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
-import { cors } from "hono/cors";
-
 import { authHandler, initAuthConfig, verifyAuth } from "@hono/auth-js";
+import { getAuthConfig } from "@/lib/auth";
 
-import { csrf } from "hono/csrf";
-import { secureHeaders } from "hono/secure-headers";
 import { zValidator } from "@hono/zod-validator";
 
 import {
@@ -18,19 +15,14 @@ import {
 } from "@/app/schema";
 import { eq, and } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { getAuthConfig } from "@/lib/auth";
 
 export const runtime = "edge";
 
 const app = new Hono().basePath("/api");
 
-app.use(csrf());
-app.use(secureHeaders());
-
 app.use("*", initAuthConfig(getAuthConfig));
 app.use("/auth/*", authHandler());
 app.use("/*", verifyAuth());
-
 const route = app
 	.get("/todos", async (c) => {
 		const authUser = c.get("authUser");

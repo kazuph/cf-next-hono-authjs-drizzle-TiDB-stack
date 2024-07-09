@@ -24,7 +24,8 @@
 	"dependencies": {
 		"@auth/core": "^0.34.1",
 		"@auth/drizzle-adapter": "^1.4.1",
-		"@hono/auth-js": "^1.0.9",
+		"@heroicons/react": "^2.1.4",
+		"@hono/auth-js": "^1.0.10",
 		"@hono/zod-validator": "^0.2.2",
 		"@hookform/resolvers": "^3.6.0",
 		"@radix-ui/react-avatar": "^1.1.0",
@@ -40,7 +41,6 @@
 		"hono": "^4.4.10",
 		"lucide-react": "^0.396.0",
 		"next": "^14.2.4",
-		"next-auth": "^4.24.7",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-hook-form": "^7.52.0",

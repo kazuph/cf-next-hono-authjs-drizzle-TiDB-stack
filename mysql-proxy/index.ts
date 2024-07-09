@@ -29,11 +29,7 @@ const main = async () => {
 					},
 				});
 				console.log(
-					JSON.stringify(
-						{ sqlBody, params, method, result: result[0] },
-						null,
-						2,
-					),
+					JSON.stringify({ sqlBody, params, method, result: result[0] }),
 				);
 
 				res.send(result[0]);
@@ -58,11 +54,7 @@ const main = async () => {
 				});
 
 				console.log(
-					JSON.stringify(
-						{ sqlBody, params, method, result: result[0] },
-						null,
-						2,
-					),
+					JSON.stringify({ sqlBody, params, method, result: result[0] }),
 				);
 				res.send(result);
 			} catch (e: any) {

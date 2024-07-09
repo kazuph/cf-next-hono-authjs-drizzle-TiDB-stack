@@ -18,9 +18,6 @@ export async function getServerSession(req: NextRequest) {
 	config.basePath ??= "/api/auth";
 	config.trustHost = true;
 	const origin = req.nextUrl.origin;
-	console.log({
-		origin,
-	});
 	const request = new Request(`${origin}${config.basePath}/session`, {
 		headers: { cookie: req.headers.get("cookie") ?? "" },
 	});

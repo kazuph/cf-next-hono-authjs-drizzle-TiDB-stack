@@ -91,7 +91,6 @@ export const createTodoSchema = z.object({
 });
 
 export const updateToggleTodoSchema = z.object({
-	id: z.coerce.number(),
 	completed: z.boolean(),
 });
 
