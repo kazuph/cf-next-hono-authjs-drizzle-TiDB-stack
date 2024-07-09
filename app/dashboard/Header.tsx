@@ -1,8 +1,7 @@
 "use client"
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { signOut, useSession } from '@hono/auth-js/react';
+import { signOut } from '@hono/auth-js/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -10,10 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSession } from '../hooks/useSession';
+
 
 export default function Header() {
-  const router = useRouter();
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
