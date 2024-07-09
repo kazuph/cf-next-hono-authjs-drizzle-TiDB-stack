@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react';
+import { useTransition, useState, useRef, useEffect } from 'react';
 
 interface Todo {
   id: number;
@@ -12,10 +12,20 @@ interface TodoItemProps {
   todo: Todo;
   updateTodo: (id: number, completed: boolean) => Promise<void>;
   deleteTodo: (id: number) => Promise<void>;
+  editTodo: (id: number, description: string) => Promise<void>;
 }
 
-export default function TodoItem({ todo, updateTodo, deleteTodo }: TodoItemProps) {
+export default function TodoItem({ todo, updateTodo, deleteTodo, editTodo }: TodoItemProps) {
   const [isPending, startTransition] = useTransition();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedDescription, setEditedDescription] = useState(todo.description);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
 
   const handleToggle = () => {
     startTransition(() => {
@@ -29,6 +39,19 @@ export default function TodoItem({ todo, updateTodo, deleteTodo }: TodoItemProps
     });
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleEditSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      startTransition(() => {
+        editTodo(todo.id, editedDescription);
+      });
+      setIsEditing(false);
+    }
+  };
+
   return (
     <li className="flex items-center justify-between w-full p-2 mb-2 border-b">
       <div className="flex items-center flex-grow">
@@ -39,9 +62,24 @@ export default function TodoItem({ todo, updateTodo, deleteTodo }: TodoItemProps
           className="mr-2"
           disabled={isPending}
         />
-        <span className={`flex-grow ${todo.completed ? 'line-through' : ''}`}>
-          {todo.description}
-        </span>
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editedDescription}
+            onChange={(e) => setEditedDescription(e.target.value)}
+            onKeyDown={handleEditSubmit}
+            className="flex-grow"
+            disabled={isPending}
+          />
+        ) : (
+          <span
+            className={`flex-grow cursor-pointer ${todo.completed ? 'line-through' : ''}`}
+            onClick={handleEdit}
+          >
+            {todo.description}
+          </span>
+        )}
       </div>
       <button
         onClick={handleDelete}

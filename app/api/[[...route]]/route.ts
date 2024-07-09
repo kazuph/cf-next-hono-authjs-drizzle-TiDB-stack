@@ -49,18 +49,9 @@ const route = app
 		const db = getDb();
 		const { description } = c.req.valid("json");
 		try {
-			const result = await db
-				.insert(todos)
-				.values({ description, userId: authUser.user.id });
+			await db.insert(todos).values({ description, userId: authUser.user.id });
 
-			if (result.insertId) {
-				const newTodo = await db
-					.select()
-					.from(todos)
-					.where(eq(todos.id, result.insertId))
-					.limit(1);
-				return c.json(newTodo[0]);
-			}
+			return c.json({ success: true });
 		} catch (error) {
 			console.error("Database error:", error);
 			return c.json({ error: "Internal server error" }, 500);
@@ -87,12 +78,7 @@ const route = app
 				if (result.rowsAffected === 0)
 					return c.json({ error: "Todo not found or not owned by user" }, 404);
 
-				const updatedTodo = await db
-					.select()
-					.from(todos)
-					.where(eq(todos.id, id))
-					.limit(1);
-				return c.json(updatedTodo[0]);
+				return c.json({ success: true });
 			} catch (error) {
 				console.error("Database error:", error);
 				return c.json({ error: "Internal server error" }, 500);
@@ -120,12 +106,7 @@ const route = app
 				if (result.rowsAffected === 0)
 					return c.json({ error: "Todo not found or not owned by user" }, 404);
 
-				const updatedTodo = await db
-					.select()
-					.from(todos)
-					.where(eq(todos.id, id))
-					.limit(1);
-				return c.json(updatedTodo[0]);
+				return c.json({ success: true });
 			} catch (error) {
 				console.error("Database error:", error);
 				return c.json({ error: "Internal server error" }, 500);
