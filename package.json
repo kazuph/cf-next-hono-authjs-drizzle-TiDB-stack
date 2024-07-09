@@ -6,7 +6,7 @@
 		"dev": "run-p dev:*",
 		"dev:next": "next dev",
 		"dev:tidb": "tiup playground --without-monitor --tag my-persistent-db",
-		"dev:mysql-proxy": "sleep 15 && tsx mysql-proxy",
+		"dev:mysql-proxy": "sleep 5 && tsx mysql-proxy",
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",

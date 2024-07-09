@@ -1,12 +1,40 @@
 import * as mysql from "mysql2/promise";
 import express from "express";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function tryConnection(connectionString, maxAttempts = 5, delay = 2000) {
+	let attempts = 0;
+	while (attempts < maxAttempts) {
+		try {
+			const connection = await mysql.createConnection(connectionString);
+			console.log("Successfully connected to MySQL");
+			return connection;
+		} catch (error) {
+			attempts++;
+			console.error(`Connection attempt ${attempts} failed: ${error.message}`);
+			if (attempts >= maxAttempts) {
+				throw new Error(
+					"Max connection attempts reached. Unable to connect to MySQL.",
+				);
+			}
+			await sleep(delay);
+		}
+	}
+}
+
 const app = express();
 app.use(express.json());
 const port = 8000;
+
 const main = async () => {
-	const connection = await mysql.createConnection(
-		"mysql://root:@127.0.0.1:4000/test",
-	);
+	let connection;
+	try {
+		connection = await tryConnection("mysql://root:@127.0.0.1:4000/test");
+	} catch (error) {
+		console.error("Failed to connect to MySQL:", error.message);
+		process.exit(1);
+	}
 
 	app.post("/query", async (req, res) => {
 		const { sql: sqlBody, params, method } = req.body;
