@@ -1,23 +1,49 @@
 'use client'
 
-import { useRef } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { z } from 'zod';
+import { addTodo } from './TodoActions';
+import { createTodoSchema } from '@/app/schema';
 
-interface AddTodoFormProps {
-  addTodo: (formData: FormData) => Promise<void>;
-}
+type TodoFormData = z.infer<typeof createTodoSchema>;
 
-export default function AddTodoForm({ addTodo }: AddTodoFormProps) {
-  const formRef = useRef<HTMLFormElement>(null);
+export default function AddTodoForm() {
+  const [serverError, setServerError] = useState<string | null>(null);
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<TodoFormData>({
+    resolver: zodResolver(createTodoSchema)
+  });
+
+  const onSubmit = async (data: TodoFormData) => {
+    try {
+      setServerError(null);
+      await addTodo(new FormData(document.getElementById('addTodoForm') as HTMLFormElement));
+      reset();
+    } catch (error) {
+      if (error instanceof Error) {
+        setServerError(error.message);
+      } else {
+        setServerError('An unexpected error occurred');
+      }
+    }
+  };
 
   return (
-    <form ref={formRef} action={addTodo} className="flex mb-4">
+    <form id="addTodoForm" onSubmit={handleSubmit(onSubmit)} className="mb-4">
       <input
-        name="description"
+        {...register('description')}
         type="text"
         placeholder="Add a new todo"
-        className="flex-grow p-2 mr-2 border rounded"
+        className="w-full p-2 border rounded"
       />
-      <button type="submit" className="px-4 py-2 text-white bg-blue-500 rounded">
+      {errors.description && (
+        <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+      )}
+      {serverError && (
+        <p className="mt-1 text-sm text-red-600">{serverError}</p>
+      )}
+      <button type="submit" className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
         Add Todo
       </button>
     </form>
