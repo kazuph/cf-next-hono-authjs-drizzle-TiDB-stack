@@ -62,7 +62,8 @@ const main = async () => {
 
 				res.send(result[0]);
 			} catch (e: any) {
-				res.status(500).json({ error: e });
+				console.error("Error in 'all' method:", e);
+				res.status(500).json({ error: e.message, stack: e.stack });
 			}
 		} else if (method === "execute") {
 			try {
@@ -86,7 +87,8 @@ const main = async () => {
 				);
 				res.send(result);
 			} catch (e: any) {
-				res.status(500).json({ error: e });
+				console.error("Error in 'execute' method:", e);
+				res.status(500).json({ error: e.message, stack: e.stack });
 			}
 		} else {
 			res.status(500).json({ error: "Unknown method value" });
