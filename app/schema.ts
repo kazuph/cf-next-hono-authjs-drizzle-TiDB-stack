@@ -64,7 +64,9 @@ export const verificationTokens = mysqlTable(
 );
 
 export const todos = mysqlTable("todos", {
-	id: int("id").primaryKey().autoincrement(),
+	id: varchar("id", { length: 36 })
+		.primaryKey()
+		.$defaultFn(() => sql`(UUID_TO_BIN(UUID(), TRUE))`),
 	description: varchar("description", { length: 255 }).notNull(),
 	userId: varchar("user_id", { length: 255 })
 		.notNull()
@@ -95,7 +97,7 @@ export const updateToggleTodoSchema = z.object({
 });
 
 export const updateTodoParamSchema = z.object({
-	id: z.coerce.number(),
+	id: z.string().uuid(),
 });
 
 export const updateTodoJsonSchema = z.object({
@@ -103,5 +105,5 @@ export const updateTodoJsonSchema = z.object({
 });
 
 export const deleteTodoSchema = z.object({
-	id: z.coerce.number(),
+	id: z.string().uuid(),
 });
