@@ -83,6 +83,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.4(ts-node@10.9.1(@types/node@20.14.9)(typescript@5.5.3)))
+      uuidv7:
+        specifier: ^1.0.1
+        version: 1.0.1
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -3787,6 +3790,10 @@ packages:
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
     hasBin: true
 
+  uuidv7@1.0.1:
+    resolution: {integrity: sha512-2noB909GbI352dKfASOY6VHHl59KvevZ1FF8gCAXCwDyrt2kkZhuFbczF9udqTfeejiRYEmO4wzUZ0WhVP+IUA==}
+    hasBin: true
+
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
@@ -7348,6 +7355,8 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@3.3.2: {}
+
+  uuidv7@1.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

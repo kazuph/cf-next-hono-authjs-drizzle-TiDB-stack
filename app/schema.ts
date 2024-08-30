@@ -2,12 +2,14 @@ import { sql } from "drizzle-orm";
 import {
 	mysqlTable,
 	varchar,
-	int,
 	timestamp,
-	text,
 	boolean,
+	binary,
+	int,
+	text,
 	primaryKey,
 } from "drizzle-orm/mysql-core";
+import { uuidv7 } from "uuidv7";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -64,15 +66,18 @@ export const verificationTokens = mysqlTable(
 );
 
 export const todos = mysqlTable("todos", {
-	id: varchar("id", { length: 36 })
+	id: binary("id", { length: 16 })
 		.primaryKey()
-		.$defaultFn(() => sql`(UUID_TO_BIN(UUID(), TRUE))`),
+		.$defaultFn(() => {
+			const uuid = uuidv7();
+			return sql`UUID_TO_BIN(${uuid})`;
+		}),
 	description: varchar("description", { length: 255 }).notNull(),
 	userId: varchar("user_id", { length: 255 })
 		.notNull()
 		.references(() => users.id),
-	completed: boolean("completed").default(false),
-	createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+	completed: boolean("completed").default(false).notNull(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertTodoSchema = createInsertSchema(todos).extend({

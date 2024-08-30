@@ -49,9 +49,13 @@ const route = app
 		const db = getDb();
 		const { description } = c.req.valid("json");
 		try {
-			await db.insert(todos).values({ description, userId: authUser.user.id });
+			const result = await db.insert(todos).values({
+				description,
+				userId: authUser.user.id,
+			});
 
-			return c.json({ success: true });
+			const insertedId = result.insertId;
+			return c.json({ id: insertedId, description, completed: false });
 		} catch (error) {
 			console.error("Database error:", error);
 			return c.json({ error: "Internal server error" }, 500);
