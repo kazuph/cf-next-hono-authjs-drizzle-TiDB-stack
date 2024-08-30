@@ -33,8 +33,25 @@ export const getDb = () => {
 				}
 
 				const data = await response.json();
-				return { rows: data };
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+
+				// Bufferオブジェクトに変換する処理を追加
+				const processedData = data.map((row: any[]) =>
+					row.map((field: any) => {
+						if (
+							field &&
+							typeof field === "object" &&
+							"type" in field &&
+							field.type === "Buffer"
+						) {
+							const buf = Buffer.from(field.data);
+							console.log({ buf });
+							return buf;
+						}
+						return field;
+					}),
+				);
+
+				return { rows: processedData };
 			} catch (e: any) {
 				console.error("Error from mysql proxy server: ", e.message);
 				return { rows: [] };

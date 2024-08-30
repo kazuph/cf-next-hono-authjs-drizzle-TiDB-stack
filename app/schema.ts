@@ -4,17 +4,20 @@ import {
 	varchar,
 	timestamp,
 	boolean,
-	binary,
 	int,
 	text,
 	primaryKey,
+	char,
 } from "drizzle-orm/mysql-core";
-import { uuidv7 } from "uuidv7";
+import { createId } from "@paralleldrive/cuid2";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = mysqlTable("user", {
-	id: varchar("id", { length: 255 }).notNull().primaryKey(),
+	id: char("id", { length: 25 })
+		.notNull()
+		.primaryKey()
+		.$defaultFn(() => createId()),
 	name: varchar("name", { length: 255 }),
 	email: varchar("email", { length: 255 }).notNull(),
 	emailVerified: timestamp("emailVerified"),
@@ -24,7 +27,7 @@ export const users = mysqlTable("user", {
 export const accounts = mysqlTable(
 	"account",
 	{
-		userId: varchar("userId", { length: 255 })
+		userId: char("userId", { length: 25 })
 			.notNull()
 			.references(() => users.id, { onDelete: "cascade" }),
 		type: varchar("type", { length: 255 })
@@ -47,7 +50,7 @@ export const accounts = mysqlTable(
 
 export const sessions = mysqlTable("session", {
 	sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
-	userId: varchar("userId", { length: 255 })
+	userId: char("userId", { length: 25 })
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
 	expires: timestamp("expires").notNull(),
@@ -66,14 +69,12 @@ export const verificationTokens = mysqlTable(
 );
 
 export const todos = mysqlTable("todos", {
-	id: binary("id", { length: 16 })
+	id: char("id", { length: 25 })
+		.notNull()
 		.primaryKey()
-		.$defaultFn(() => {
-			const uuid = uuidv7();
-			return sql`UUID_TO_BIN(${uuid})`;
-		}),
+		.$defaultFn(() => createId()),
 	description: varchar("description", { length: 255 }).notNull(),
-	userId: varchar("user_id", { length: 255 })
+	userId: char("user_id", { length: 25 })
 		.notNull()
 		.references(() => users.id),
 	completed: boolean("completed").default(false).notNull(),
@@ -87,6 +88,7 @@ export const insertTodoSchema = createInsertSchema(todos).extend({
 		.min(3, "Description must be at least 3 characters")
 		.max(100, "Description must be 100 characters or less"),
 });
+
 export const selectTodoSchema = createSelectSchema(todos);
 
 export const createTodoSchema = z.object({
@@ -102,7 +104,7 @@ export const updateToggleTodoSchema = z.object({
 });
 
 export const updateTodoParamSchema = z.object({
-	id: z.string().uuid(),
+	id: z.string().length(25),
 });
 
 export const updateTodoJsonSchema = z.object({
@@ -110,5 +112,5 @@ export const updateTodoJsonSchema = z.object({
 });
 
 export const deleteTodoSchema = z.object({
-	id: z.string().uuid(),
+	id: z.string().length(25),
 });

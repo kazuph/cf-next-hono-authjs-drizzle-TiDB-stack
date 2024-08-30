@@ -19,7 +19,9 @@
 		"migration:apply:local": "NODE_ENV=development drizzle-kit migrate",
 		"migration:apply:remote": "NODE_ENV=production drizzle-kit migrate",
 		"deploy": "npm run pages:build && wrangler pages deploy",
-		"cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts"
+		"cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
+		"db:reset": "mysql --host 127.0.0.1 --port 4000 -u root -e 'DROP DATABASE IF EXISTS test; CREATE DATABASE test;'",
+		"migration:apply:local:reset": "rm -rf drizzle/migrations/* && npm run migration:generate && npm run migration:apply:local"
 	},
 	"dependencies": {
 		"@auth/core": "^0.34.1",
@@ -28,6 +30,7 @@
 		"@hono/auth-js": "^1.0.10",
 		"@hono/zod-validator": "^0.2.2",
 		"@hookform/resolvers": "^3.6.0",
+		"@paralleldrive/cuid2": "^2.2.2",
 		"@radix-ui/react-avatar": "^1.1.0",
 		"@radix-ui/react-checkbox": "^1.1.1",
 		"@radix-ui/react-dropdown-menu": "^2.1.1",
@@ -47,7 +50,6 @@
 		"react-hook-form": "^7.52.0",
 		"tailwind-merge": "^2.3.0",
 		"tailwindcss-animate": "^1.0.7",
-		"uuidv7": "^1.0.1",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
