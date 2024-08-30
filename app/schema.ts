@@ -14,7 +14,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = mysqlTable("user", {
-	id: char("id", { length: 25 })
+	id: char("id", { length: 24 })
 		.notNull()
 		.primaryKey()
 		.$defaultFn(() => createId()),
@@ -27,7 +27,7 @@ export const users = mysqlTable("user", {
 export const accounts = mysqlTable(
 	"account",
 	{
-		userId: char("userId", { length: 25 })
+		userId: char("userId", { length: 24 })
 			.notNull()
 			.references(() => users.id, { onDelete: "cascade" }),
 		type: varchar("type", { length: 255 })
@@ -49,8 +49,8 @@ export const accounts = mysqlTable(
 );
 
 export const sessions = mysqlTable("session", {
-	sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
-	userId: char("userId", { length: 25 })
+	sessionToken: char("sessionToken", { length: 36 }).notNull().primaryKey(),
+	userId: char("userId", { length: 24 })
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
 	expires: timestamp("expires").notNull(),
@@ -69,12 +69,12 @@ export const verificationTokens = mysqlTable(
 );
 
 export const todos = mysqlTable("todos", {
-	id: char("id", { length: 25 })
+	id: char("id", { length: 24 })
 		.notNull()
 		.primaryKey()
 		.$defaultFn(() => createId()),
 	description: varchar("description", { length: 255 }).notNull(),
-	userId: char("user_id", { length: 25 })
+	userId: char("user_id", { length: 24 })
 		.notNull()
 		.references(() => users.id),
 	completed: boolean("completed").default(false).notNull(),
@@ -104,7 +104,7 @@ export const updateToggleTodoSchema = z.object({
 });
 
 export const updateTodoParamSchema = z.object({
-	id: z.string().length(25),
+	id: z.string().length(24),
 });
 
 export const updateTodoJsonSchema = z.object({
@@ -112,5 +112,5 @@ export const updateTodoJsonSchema = z.object({
 });
 
 export const deleteTodoSchema = z.object({
-	id: z.string().length(25),
+	id: z.string().length(24),
 });
